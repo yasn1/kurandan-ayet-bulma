@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kur'an Ayet Arama Uygulaması</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/darkly/bootstrap.min.css">
+  <style>
+    .result-item {
+      border: 1px solid #444;
+      padding: 10px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      background-color: #333;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <a class="navbar-brand" href="/">Kur'an Ayet Arama</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Ana Sayfa</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/documentation">Dökümantasyon</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/apidoc">API Dökümantasyonu</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <h1 class="mb-4">Kur'an Ayet Arama Uygulaması</h1>
+
+    <section class="mb-5">
+      <h3>Sure Arama</h3>
+      <form id="sureForm" class="form-inline">
+        <div class="form-group mb-2">
+          <input type="text" class="form-control" id="sureFilter" placeholder="Sure adı veya filtre">
+        </div>
+        <button type="submit" class="btn btn-primary mb-2 ml-2">Ara</button>
+      </form>
+    </section>
+
+    
+
+    <section class="mb-5">
+      <h3>Ayet Bul (Metin ile Arama)</h3>
+      <form id="ayetBulForm" class="form-inline">
+        <div class="form-group mb-2">
+          <input type="text" class="form-control" id="searchText"
+            placeholder="Ayet içerisinde aramak istediğiniz metin">
+        </div>
+        <button type="submit" class="btn btn-primary mb-2 ml-2">Ara</button>
+      </form>
+    </section>
+  </div>
+  <div class="modal fade" id="resultModal" tabindex="-1" role="dialog" aria-labelledby="resultModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header">
+          <h5 class="modal-title" id="resultModalLabel">Arama Sonuçları</h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Kapat">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" id="modalBody">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <script>
+    function highlightMatches(text, keyword) {
+      if (!text || !keyword) return text;
+      const escapedKeyword = keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const regex = new RegExp(escapedKeyword, 'gi');
+      return text.replace(regex, (match) => `<mark>${match}</mark>`);
+    }
+
+    function showResults(items, keyword, type = null) {
+      if (!type) {
+
+        const modalBody = document.getElementById('modalBody');
+        modalBody.innerHTML = '';
+        if (!items || items.length === 0) {
+          modalBody.innerHTML = '<p>Sonuç bulunamadı.</p>';
+        } else {
+          items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            let resultText = `${item.ayet_metin}` || item.text || '';
+            if (keyword) {
+              resultText = highlightMatches(resultText, keyword);
+            }
+            const header = `${item.sure.sure_ad} ${item.ayet_ayetno}` || 'Bilgi';
+            const verseNumber = item.ayet_no ? (' ' + item.ayet_no) : (item.verseNumber ? (' ' + item.verseNumber) : '');
+            div.innerHTML = `<strong>${header}${verseNumber}</strong>: ${resultText}`;
+            modalBody.appendChild(div);
+          });
+        }
+
+      }else if (type == "sure"){
+
+        const modalBody = document.getElementById('modalBody');
+        modalBody.innerHTML = '';
+        if (!items || items.length === 0) {
+          modalBody.innerHTML = '<p>Sonuç bulunamadı.</p>';
+        } else {
+          items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            let resultText = `${item.sure_ad} (${item.sure_sureno})` || '';
+            if (keyword) {
+              resultText = highlightMatches(resultText, keyword);
+            }
+            const header = item.sure || item.sure_adı || item.suraName || 'Bilgi';
+            const verseNumber = item.ayet_no ? (' ' + item.ayet_no) : (item.verseNumber ? (' ' + item.verseNumber) : '');
+            div.innerHTML = `<strong>${header}${verseNumber}</strong>: ${resultText}`;
+            modalBody.appendChild(div);
+          });
+        }
+      }
+
+      $('#resultModal').modal('show');
+    }
+
+    document.getElementById('sureForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const filter = document.getElementById('sureFilter').value.trim();
+      try {
+        let a = false;
+        if(isNaN(filter)){
+          a = true;
+        }
+        const filterText = filter? (a ? {sure_ad: filter } : { sure_sureno: filter }) : "";
+        const response = await fetch('/api/sure', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({filter:filterText})
+        });
+        const data = await response.json();
+        showResults(data, filter, "sure");
+      } catch (err) {
+        console.error(err);
+        alert('Sure arama sırasında hata oluştu.');
+      }
+    });
+
+    
+
+    document.getElementById('ayetBulForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const text = document.getElementById('searchText').value.trim();
+      try {
+        const res = await fetch('/api/sure', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const sureData = await res.json();
+
+        const response = await fetch('/api/ayetbul', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        const data = await response.json();
+        data.forEach(item => {
+          item.sure = sureData.find(x => x.sure_sureno == item.ayet_sureno);
+        });
+        showResults(data, text);
+      } catch (err) {
+        console.error(err);
+        alert('Ayet bulma sırasında hata oluştu.');
+      }
+    });
+  </script>
+</body>
+
+</html>

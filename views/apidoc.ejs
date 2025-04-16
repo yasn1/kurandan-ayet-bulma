@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>API Dökümantasyonu</title>
+  <!-- Bootswatch Darkly Teması -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/darkly/bootstrap.min.css">
+  <style>
+    pre {
+      background-color: #222;
+      color: #fff;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigasyon -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <a class="navbar-brand" href="/">Kur'an Ayet Arama</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" 
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/">Ana Sayfa</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/documentation">Dökümantasyon</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="/apidoc">API Dökümantasyonu</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  
+  <div class="container mt-4">
+    <h1>API Dökümantasyonu</h1>
+    <hr>
+    
+    <section>
+      <h3>Genel Bilgi</h3>
+      <p>API, Kur'an sure ve ayet verilerini çeşitli filtreleme yöntemleriyle aramanıza olanak sağlar.</p>
+    </section>
+    
+    <section>
+      <h3>Endpoint'ler</h3>
+      <ul>
+        <li>
+          <strong>POST /api/sure</strong>
+          <p>Gövde (body) parametresi olarak JSON formatında <code>{ "filter": {sure_ad, sure_sureno} }</code> bekler ve eşleşen sureleri listeler.</p>
+          <pre>
+Örnek İstek:
+fetch('/api/sure', {
+  method: 'GET',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ filter: {sure_ad:"...", sure_sureno:"..."} })
+});
+          </pre>
+        </li>
+        <li>
+          <strong>POST /api/ayet</strong>
+          <p>Gövde (body) parametresi olarak JSON formatında <code>{ "filter": {ayet_ayetno, ayet_sureno} }</code> bekler ve eşleşen ayetleri döndürür.</p>
+          <pre>
+Örnek İstek:
+fetch('/api/ayet', {
+  method: 'GET',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ filter: {ayet_ayetno:"...", ayet_sureno:"..."} })
+});
+          </pre>
+        </li>
+        <li>
+          <strong>POST /api/ayetbul</strong>
+          <p>Gövde (body) parametresi olarak JSON formatında <code>{ "text": "aranan metin" }</code> bekler ve ayet metni içinde eşleşen sonuçları döndürür.</p>
+          <pre>
+Örnek İstek:
+fetch('/api/ayetbul', {
+  method: 'GET',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ text: "..." })
+});
+          </pre>
+        </li>
+      </ul>
+    </section>
+    
+    <section>
+      <h3>Yanıt Formatı</h3>
+      <p>Tüm endpoint'ler, sorguya uygun sonuçları JSON formatında döndürür. Örneğin:</p>
+      <pre>
+{
+  "sure": [
+    { "id": 1, "sure_ad": "Fatiha", ... },
+    ...
+  ]
+}
+      </pre>
+    </section>
+  </div>
+  
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/darkly/bootstrap.min.js"></script>
+</body>
+</html>
